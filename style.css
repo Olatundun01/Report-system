@@ -7,7 +7,7 @@
 
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #000428, #004e92); /* Black + Blue */
+  background: linear-gradient(135deg, #000428, #004e92);
   color: #fff;
   min-height: 100vh;
   display: flex;
@@ -41,7 +41,7 @@ body {
   font-weight: 600;
 }
 
-/* User info (top right badge + logout) */
+/* User info */
 .user-info {
   position: absolute;
   top: 15px;
@@ -245,7 +245,6 @@ body {
   font-weight: 600;
   transition: all 0.3s;
 }
-
 .hod-sidebar li:hover,
 .hod-sidebar li.active {
   background: #00a2ff;
@@ -314,7 +313,7 @@ body {
   transform: translateX(4px);
 }
 
-/* Buttons inside */
+/* Buttons inside cards */
 .hod-report-card .btn {
   background: #004e92;
   color: white;
@@ -327,6 +326,48 @@ body {
 }
 .hod-report-card .btn:hover {
   background: #00a2ff;
+}
+
+/* HOD Tabs (Reports section) */
+.hod-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.hod-tab {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #aaa;
+  transition: all 0.2s;
+}
+.hod-tab.active {
+  background: #004e92;
+  color: #fff;
+}
+
+/* Status badges */
+.status-submitted {
+  background: orange;
+  color: #000;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+.status-approved {
+  background: green;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+.status-rejected {
+  background: red;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 5px;
 }
 
 /* Animations */

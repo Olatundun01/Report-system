@@ -1,4 +1,4 @@
-// Demo storage
+// ===== Demo Storage =====
 let currentUser = null;
 let users = {
   'john': { password: '12345', role: 'staff', name: 'John Doe', email: 'john@mail.com' },
@@ -6,7 +6,7 @@ let users = {
 };
 let reports = [];
 
-/* ===== Auth ===== */
+// ===== AUTH =====
 function showLogin() {
   document.getElementById('loginForm').classList.add('active');
   document.getElementById('registerForm').classList.remove('active');
@@ -48,9 +48,7 @@ function register() {
   users[username] = { password: pass, role, name, email };
   showMessage('registerMessage', 'Registration successful! Please login.', 'success');
 
-  setTimeout(() => {
-    showLogin();
-  }, 2000);
+  setTimeout(() => showLogin(), 2000);
 }
 
 function login() {
@@ -75,11 +73,9 @@ function login() {
       document.getElementById('hodDashboard').style.display = 'none';
       loadStaffReports();
     } else if (currentUser.role === 'hod') {
-  document.getElementById('staffDashboard').style.display = 'none';
-  document.getElementById('dashboard').classList.remove('active');
-  loadHodDashboard();
-}
-
+      document.getElementById('staffDashboard').style.display = 'none';
+      loadHodDashboard();
+    }
   } else {
     showMessage('loginMessage', 'Invalid login details', 'error');
   }
@@ -94,18 +90,17 @@ function logout() {
   document.getElementById('loginPassword').value = '';
 }
 
-/* ===== Tabs ===== */
-function switchTab(tabId) {
+// ===== TABS =====
+function switchTab(tabId, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  event.target.classList.add('active');
+  if(event) event.target.classList.add('active');
   document.getElementById(tabId).classList.add('active');
 
   if (tabId === "myreports") loadStaffReports();
-  if (tabId === "allreports") loadAllReports();
 }
 
-/* ===== Reports ===== */
+// ===== REPORTS (Staff) =====
 function submitReport() {
   const weekEnding = document.getElementById('reportWeek').value;
   const fileInput = document.getElementById('reportFile');
@@ -134,6 +129,7 @@ function submitReport() {
 
   showMessage('submitMessage', 'Report uploaded successfully!', 'success');
   fileInput.value = '';
+  loadStaffReports();
 }
 
 function loadStaffReports() {
@@ -144,60 +140,22 @@ function loadStaffReports() {
     return;
   }
   container.innerHTML = myReports.map(r => `
-  <div class="report-card">
-    <div class="report-header">
-      <h3>Week Ending: ${r.weekEnding}</h3>
-      <span class="status-badge status-${r.status}">${r.status}</span>
-    </div>
-    <a href="${r.pdfUrl}" target="_blank" class="btn">View ${r.fileName}</a>
-  </div>
-`).join('');
-
-}
-
-function loadAllReports() {
-  const container = document.getElementById('allReportsList');
-  if (!reports.length) {
-    container.innerHTML = "<p>No reports submitted yet.</p>";
-    return;
-  }
-  container.innerHTML = reports.map(r => `
-  <div class="report-card">
-    <div class="report-header">
-      <div>
-        <h3>${users[r.staff]?.name || r.staff}</h3>
-        <p>Week Ending: ${r.weekEnding}</p>
+    <div class="report-card">
+      <div class="report-header">
+        <h3>Week Ending: ${r.weekEnding}</h3>
+        <span class="status-badge status-${r.status}">${r.status}</span>
       </div>
-      <span class="status-badge status-${r.status}">${r.status}</span>
+      <a href="${r.pdfUrl}" target="_blank" class="btn">View ${r.fileName}</a>
     </div>
-    <a href="${r.pdfUrl}" target="_blank" class="btn">Download ${r.fileName}</a>
-  </div>
-`).join('');
-
+  `).join('');
 }
 
-/* ===== Helpers ===== */
-function showMessage(containerId, text, type) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = `<div class="${type}-message">${text}</div>`;
-  setTimeout(() => (container.innerHTML = ""), 3000);
-}
-
-/* ===== NEW HOD PANEL FUNCTIONS ===== */
-
-function showHodSection(sectionId) {
-  document.querySelectorAll('.hod-section').forEach(s => s.classList.remove('active'));
-  document.getElementById(`hod-${sectionId}`).classList.add('active');
-
-  document.querySelectorAll('.hod-sidebar li').forEach(li => li.classList.remove('active'));
-  event.target.classList.add('active');
-}
-
-// When HOD logs in, populate dashboard
+// ===== HOD DASHBOARD =====
 function loadHodDashboard() {
   document.getElementById('hodDashboard').style.display = 'flex';
+  showHodSection('overview');
   updateHodStats();
-  loadHodReports();
+  showHodReports('submitted');
   loadHodStaff();
 }
 
@@ -206,25 +164,6 @@ function updateHodStats() {
   document.getElementById('hodApproved').textContent = reports.filter(r => r.status === 'approved').length;
   document.getElementById('hodPending').textContent = reports.filter(r => r.status === 'submitted').length;
   document.getElementById('hodRejected').textContent = reports.filter(r => r.status === 'rejected').length;
-}
-
-function loadHodReports() {
-  const container = document.getElementById('hodReportsList');
-  if (!reports.length) {
-    container.innerHTML = "<p>No reports yet.</p>";
-    return;
-  }
-  container.innerHTML = reports.map(r => `
-    <div class="hod-report-card">
-      <h4>${users[r.staff]?.name || r.staff}</h4>
-      <p>Week Ending: ${r.weekEnding}</p>
-      <div>
-        <button class="btn" onclick="approveReport(${r.id})">Approve</button>
-        <button class="btn" onclick="rejectReport(${r.id})">Reject</button>
-        <a href="${r.pdfUrl}" target="_blank" class="btn">View</a>
-      </div>
-    </div>
-  `).join('');
 }
 
 function loadHodStaff() {
@@ -243,16 +182,67 @@ function loadHodStaff() {
   `).join('');
 }
 
-// Update report status
+// Show HOD main sections (overview, reports, staff)
+function showHodSection(sectionId, event) {
+  document.querySelectorAll('.hod-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`hod-${sectionId}`).classList.add('active');
+
+  if(event){
+    document.querySelectorAll('.hod-sidebar li').forEach(li => li.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+}
+
+// ===== HOD REPORTS FILTER =====
+function showHodReports(filter, event) {
+  const container = document.getElementById('hodReportsList');
+
+  // Highlight active filter tab
+  if(event){
+    document.querySelectorAll('.hod-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  let filtered = reports;
+  if(filter !== 'all') filtered = reports.filter(r => r.status === filter);
+
+  if (!filtered.length) {
+    container.innerHTML = "<p>No reports found.</p>";
+    return;
+  }
+
+  container.innerHTML = filtered.map(r => `
+    <div class="hod-report-card">
+      <h4>${users[r.staff]?.name || r.staff}</h4>
+      <p>Week Ending: ${r.weekEnding}</p>
+      <p>Status: <span class="status-badge status-${r.status}">${r.status}</span></p>
+      <div style="margin-top:10px;">
+        <button class="btn" onclick="approveReport(${r.id})">Approve</button>
+        <button class="btn" onclick="rejectReport(${r.id})">Reject</button>
+        <a href="${r.pdfUrl}" target="_blank" class="btn">View</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== Approve/Reject =====
 function approveReport(id) {
   const r = reports.find(rep => rep.id === id);
   if (r) r.status = 'approved';
-  loadHodReports();
   updateHodStats();
+  showHodReports('all');
 }
+
 function rejectReport(id) {
   const r = reports.find(rep => rep.id === id);
   if (r) r.status = 'rejected';
-  loadHodReports();
   updateHodStats();
+  showHodReports('all');
+}
+
+// ===== HELPER =====
+function showMessage(containerId, text, type) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<div class="${type}-message">${text}</div>`;
+  setTimeout(() => (container.innerHTML = ""), 3000);
 }
